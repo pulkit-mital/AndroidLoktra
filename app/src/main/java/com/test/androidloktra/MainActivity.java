@@ -50,31 +50,28 @@ public class MainActivity extends AppCompatActivity {
      * Loading data from the Github Api parsing it in to ArrayList.
      */
 
-    public void loadingData(){
+    public void loadingData() {
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
-                progressDialog.setTitle("Please Wait...");
-                progressDialog.setMessage("Loading Data...");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
+        progressDialog.setTitle("Please Wait...");
+        progressDialog.setMessage("Loading Data...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
         final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, "https://api.github.com/repos/rails/rails/commits", new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Log.v(TAG,response.toString());
                 commitList = new ArrayList<>();
 
-                for(int i=0;i<response.length();i++){
+                for (int i = 0; i < response.length(); i++) {
                     try {
                         JSONObject jsonObject = response.getJSONObject(i);
-                         String sha = jsonObject.getString("sha");
+                        String sha = jsonObject.getString("sha");
+                        String commiterName = jsonObject.getJSONObject("commit").getJSONObject("committer").getString("name");
+                        String message = jsonObject.getJSONObject("commit").getString("message");
+                        commitList.add(new Commits(commiterName, sha, message));
 
-                         String commiterName = jsonObject.getJSONObject("commit").getJSONObject("committer").getString("name");
-                         String message = jsonObject.getJSONObject("commit").getString("message");
-                        Log.v(TAG,message);
-                        commitList.add(new Commits(commiterName,sha,message));
-
-                    }catch (JSONException ex){
+                    } catch (JSONException ex) {
                         ex.printStackTrace();
                     }
 
@@ -86,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG,error.getMessage());
-                Toast.makeText(MainActivity.this,"Unable to load data",Toast.LENGTH_SHORT).show();
+                Log.e(TAG, error.getMessage());
+                Toast.makeText(MainActivity.this, "Unable to load data", Toast.LENGTH_SHORT).show();
                 progressDialog.dismiss();
             }
         });
@@ -98,14 +95,15 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * initializing RecyclerAdapter and setting data in recycler view.
+     *
      * @param commitList
      */
-    private void initializeRecyclerView(ArrayList<Commits> commitList){
+    private void initializeRecyclerView(ArrayList<Commits> commitList) {
         if (recyclerView != null) {
             recyclerView.setHasFixedSize(true);
-            recyclerViewLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+            recyclerViewLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             recyclerView.setLayoutManager(recyclerViewLayoutManager);
-            recyclerAdapter = new RecyclerAdapter(this,commitList);
+            recyclerAdapter = new RecyclerAdapter(this, commitList);
             recyclerView.setAdapter(recyclerAdapter);
         }
     }
